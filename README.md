@@ -41,9 +41,7 @@ Please list two areas of the assignment you'd like to **discuss further with you
 ## Video Walkthrough
 
 Here's a walkthrough of implemented user stories:
-**WIFI Error Message**
-<img src='https://i.imgur.com/OX2fnqe.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
-**Rest of the Features (Their weren't that many)**
+<img src='https://i.imgur.com/OX2fnqe.gif' title='WI-FI Error Message' width='' alt='Video Walkthrough' />
 <img src='https://i.imgur.com/CCspCkW.mp4' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
