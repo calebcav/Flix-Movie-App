@@ -42,7 +42,7 @@ Please list two areas of the assignment you'd like to **discuss further with you
 
 Here's a walkthrough of implemented user stories:
 **WIFI Error Message**
-<img src='https://imgur.com/a/XvVoXlD' title='Video Walkthrough' width='' alt='Video Walkthrough' />
+<img src='https://imgur.com/OX2fnqe' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 **Rest of the Features (Their weren't that many)**
 <img src='https://imgur.com/CCspCkW' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
