@@ -32,6 +32,11 @@
     [self.refreshControl addTarget:self action:@selector(fetchMovies) forControlEvents:UIControlEventValueChanged];
     [self.tableView insertSubview:self.refreshControl atIndex:0];
     
+    [self.navigationController.navigationBar setBackgroundImage:[UIImage new]
+                         forBarMetrics:UIBarMetricsDefault]; //UIImageNamed:@"transparent.png"
+    self.navigationController.navigationBar.shadowImage = [UIImage new];////UIImageNamed:@"transparent.png"
+    self.navigationController.navigationBar.translucent = YES;
+    self.navigationController.view.backgroundColor = [UIColor clearColor];
     // Do any additional setup after loading the view.
 }
 
@@ -104,6 +109,10 @@
     cell.posterView.image = nil;
     [cell.posterView setImageWithURL:posterURL];
     //cell.textLabel.text = movie[@"title"];
+    UIView *backgroundView = [[UIView alloc] init];
+    backgroundView.backgroundColor = UIColor.blueColor;
+    cell.selectedBackgroundView = backgroundView;
+    
     return cell;
 }
 

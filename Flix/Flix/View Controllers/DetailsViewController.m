@@ -8,13 +8,20 @@
 
 #import "DetailsViewController.h"
 #import <UIImageView+AFNetworking.h>
+#import "SimilarCell.h"
 
-@interface DetailsViewController ()
+@interface DetailsViewController () <UICollectionViewDataSource, UICollectionViewDelegate>
 @property (weak, nonatomic) IBOutlet UIImageView *backdropView;
 @property (weak, nonatomic) IBOutlet UIImageView *posterView;
 @property (weak, nonatomic) IBOutlet UILabel *titleLabel;
 @property (weak, nonatomic) IBOutlet UILabel *synopsisLabel;
 @property (nonatomic, strong) NSArray *similarMovies;
+@property (nonatomic, strong) UIRefreshControl *refreshControl;
+@property (weak, nonatomic) IBOutlet UICollectionView *collectionView;
+@property (weak, nonatomic) IBOutlet UILabel *starsLabel;
+@property (weak, nonatomic) IBOutlet UILabel *dateLabel;
+
+
 
 @end
 
@@ -25,7 +32,7 @@
     NSString *baseURLString = @"https://image.tmdb.org/t/p/w500";
     NSString *posterURLString = self.movie[@"poster_path"];
     NSString *fullPosterURLString = [baseURLString stringByAppendingFormat:posterURLString];
-    
+   
     NSURL *posterURL = [NSURL URLWithString:fullPosterURLString];
     [self.posterView setImageWithURL:posterURL];
     NSString *backdropURLString = self.movie[@"backdrop_path"];
@@ -36,20 +43,37 @@
     [self fetchSimilarMovies];
     self.titleLabel.text = self.movie[@"title"];
     self.synopsisLabel.text = self.movie[@"overview"];
-    
+    self.starsLabel.text = [self.movie[@"vote_average"] stringValue];
+    self.dateLabel.text = self.movie[@"release_date"];
     [self.titleLabel sizeToFit];
     [self.synopsisLabel sizeToFit];
+    self.collectionView.dataSource = self;
+    self.collectionView.delegate = self;
+    
+    UIVisualEffect *blurEffect = [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
+    UIVisualEffectView *visualEffectView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    visualEffectView.frame = self.backdropView.accessibilityFrame;
+    [self.backdropView addSubview:visualEffectView];
+    
+    
+
     // Do any additional setup after loading the view.
 }
 
 - (void) fetchSimilarMovies {
 //[self.activityIndicator startAnimating];
-    
-NSURL *url = [NSURL URLWithString:@"https://api.themoviedb.org/3/movie/508439/similar?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed"];
+    NSNumber *movieID = self.movie[@"id"];
+    NSString *baseFetchURL = @"https://api.themoviedb.org/3/movie/";
+    NSString *movieIDString = [movieID stringValue];
+    NSString *firstHalf = [baseFetchURL stringByAppendingFormat:@"%@", movieIDString];
+    NSString *secondHalf = @"/similar?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed";
+    NSString *fullURL = [firstHalf stringByAppendingFormat:@"%@", secondHalf];
+NSURL *url = [NSURL URLWithString:fullURL];
 NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:10.0];
 NSURLSession *session = [NSURLSession sessionWithConfiguration:[NSURLSessionConfiguration defaultSessionConfiguration] delegate:nil delegateQueue:[NSOperationQueue mainQueue]];
 NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHandler:^(NSData *data, NSURLResponse *response, NSError *error) {
        if (error != nil) {
+           NSLog(@"Hello");
            NSLog(@"%@", [error localizedDescription]);
            UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"Cannot Get Movies"
                   message:@"The internet connection appears to be offline"
@@ -79,10 +103,8 @@ NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHand
        else {
            NSDictionary *dataDictionary = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:nil];
            
-           NSInteger movieID = self.movie[@"id"];
-           NSLog(@"%tu", movieID);
-           //[self.collectionView reloadData];
-           
+           [self.collectionView reloadData];
+           self.similarMovies = dataDictionary[@"results"];
            
            // TODO: Get the array of movies
            // TODO: Store the movies in a property to use elsewhere
@@ -90,7 +112,9 @@ NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHand
        }
     //[self.refreshControl endRefreshing];
     //[self.activityIndicator stopAnimating];
+
    }];
+    [task resume];
 }
 /*
 #pragma mark - Navigation
@@ -101,5 +125,48 @@ NSURLSessionDataTask *task = [session dataTaskWithRequest:request completionHand
     // Pass the selected object to the new view controller.
 }
 */
+
+
+
+
+
+
+
+
+- (nonnull __kindof UICollectionViewCell *)collectionView:(nonnull UICollectionView *)collectionView cellForItemAtIndexPath:(nonnull NSIndexPath *)indexPath {
+    NSLog(@"Hello");
+    SimilarCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"SimilarCell" forIndexPath:indexPath];
+    NSDictionary *similar = self.similarMovies[indexPath.item];
+    NSString *posterBase = @"https://image.tmdb.org/t/p/w500";
+    @try {
+        NSString *similarPosterURL = similar[@"poster_path"];
+        NSString *fullPosterURL = [posterBase stringByAppendingFormat:@"%@", similarPosterURL];
+        NSLog(@"%@", fullPosterURL);
+        NSURL *similarFullPosterURL = [NSURL URLWithString:fullPosterURL];
+        [cell.similarPosterView setImageWithURL:similarFullPosterURL];
+        
+    }
+    @catch (NSException *exception){
+        cell.similarPosterView.image = nil;
+    }
+    /*
+    if ([similar[@"poster_path"] isKindOfClass:[NSString class]]){
+        NSString *similarPosterURL = similar[@"poster_path"];
+        NSString *fullPosterURL = [posterBase stringByAppendingFormat:@"%@", similarPosterURL];
+        NSLog(@"%@", fullPosterURL);
+        NSURL *similarFullPosterURL = [NSURL URLWithString:fullPosterURL];
+        [cell.similarPosterView setImageWithURL:similarFullPosterURL];
+    }
+    else{
+        cell.similarPosterView.image = nil;
+    }
+     */
+    return cell;
+}
+
+- (NSInteger)collectionView:(nonnull UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section {
+    return 3;
+}
+
 
 @end
